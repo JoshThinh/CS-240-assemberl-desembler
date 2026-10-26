@@ -10,8 +10,12 @@ This repo has my work for the assembler/disassembler project. I took my MIPS Fiz
 | `Assembler.java` | The assembler (started from the in-class code) |
 | `fizzbuzz.mhc-ascii` | Machine code written as readable 0s and 1s |
 | `fizzbuzz.mhc-bin` | The actual machine code bytes |
-| `Disassembler.java` | The disassembler (Part 4) |
-| reconstructed `.asm` | FizzBuzz rebuilt from the machine code (Part 4) |
+| `Disassembler.java` | The disassembler |
+| `fizzbuzz_reconstructed.asm` | FizzBuzz rebuilt from the machine code |
+| `fizzbuzz_reconstructed.mhc-bin` / `.mhc-ascii` | The reconstructed program assembled again (same bytes as the original) |
+| `fizzbuzz_bin_hexdump.txt` | Hex dump of `fizzbuzz.mhc-bin`, since you can't open that file as text |
+| `assemble_output.txt`, `error_tests.txt` | Assembler test evidence |
+| `disassembler_test_output.txt` | Disassembler test evidence |
 
 ---
 
@@ -74,10 +78,58 @@ It also catches unknown registers, labels that don't exist, numbers that are too
 
 ## Part 4: The disassembler
 
-*(coming next)*
+### How to run it
+`Disassembler.java` uses some code from `Assembler.java`, so compile both together:
+
+```
+javac Assembler.java Disassembler.java
+java Disassembler fizzbuzz.mhc-bin
+```
+
+That writes `fizzbuzz_reconstructed.asm`. It works with the text version too:
+
+```
+java Disassembler fizzbuzz.mhc-ascii
+```
+
+Both give the same `.asm` file (just the comment at the top is different).
+
+### How it works
+1. Reads the file. For mhc-ascii it skips the `#` lines and turns every 8 zeros and ones back into a byte, so after this step both formats are the same.
+2. Reads the 20-byte header to find out where the instructions end and the data starts.
+3. Decodes every 4-byte instruction by looking at the opcode (and the funct for R-type).
+4. Makes a label for everything a branch or jump goes to (`L_<address>`), and calls the first instruction `main`.
+5. Turns the data bytes back into `.asciiz` strings.
+
+The original comments, label names, and pseudoinstructions don't come back, which the assignment says is fine. So `li $t1, 1` comes back as `addiu $t1, $zero, 1`, `la $a0, fizz` comes back as `lui` + `ori`, and `rem` comes back as `addiu $at` + `div` + `mfhi`. I kept them as real instructions on purpose so reassembling gives the exact same bytes.
+
+### Checking that it matches
+The disassembler checks itself. After writing the `.asm`, it runs it back through the assembler and compares the bytes:
+
+```
+Verified: reassembling fizzbuzz_reconstructed.asm gives the same 210 bytes as fizzbuzz.mhc-bin.
+```
+
+You can also check by hand:
+
+```
+java Assembler fizzbuzz_reconstructed.asm
+cmp fizzbuzz.mhc-bin fizzbuzz_reconstructed.mhc-bin && echo "same bytes"
+```
+
+That prints `same bytes`, so the reconstructed program is identical to the original. Since it's the exact same machine code, it prints the same FizzBuzz output. I also ran it in a simulator and got FizzBuzz 1–100. If you want to run it in MARS, turn delayed branching off (Settings → Delayed branching).
+
+### Errors
+Bad input gives an error and no output file. For example:
+
+```
+Disassembly failed for bad_char.mhc-ascii: mhc-ascii line 12 has an invalid character '2' (only 0, 1, spaces, and # comment lines are allowed)
+```
+
+It also catches files that aren't from my assembler (no `MHC1` header), files that got cut off, instructions it doesn't support, and missing files. All of these are in `disassembler_test_output.txt`.
 
 ---
 
 ## Sources
 - The assembler is built off the in-class assembler code from the CS 240 professor.
-- I used Claude (Anthropic's AI) to help add the file reading and writing, the output file format, and the error messages, and to check my work.
+- I used Claude (Anthropic's AI) to help add the file reading and writing, the output file format, the error messages, and the disassembler, and to check my work.
