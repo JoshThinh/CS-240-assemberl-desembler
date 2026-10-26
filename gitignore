@@ -1,0 +1,8 @@
+# Compiled Java files (rebuilt with javac)
+*.class
+
+# Mac system files
+.DS_Store
+
+# VS Code settings
+.vscode/
