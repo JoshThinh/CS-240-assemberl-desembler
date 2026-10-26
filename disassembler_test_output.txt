@@ -1,0 +1,39 @@
+$ javac Assembler.java Disassembler.java
+
+$ java Disassembler fizzbuzz.mhc-ascii
+Read fizzbuzz.mhc-ascii as mhc-ascii (210 bytes).
+Wrote fizzbuzz_reconstructed.asm
+Verified: reassembling fizzbuzz_reconstructed.asm gives the same 210 bytes as fizzbuzz.mhc-ascii.
+
+$ java Disassembler fizzbuzz.mhc-bin
+Read fizzbuzz.mhc-bin as mhc-bin (210 bytes).
+Wrote fizzbuzz_reconstructed.asm
+Verified: reassembling fizzbuzz_reconstructed.asm gives the same 210 bytes as fizzbuzz.mhc-bin.
+
+$ java Assembler fizzbuzz_reconstructed.asm
+Assembled fizzbuzz_reconstructed.asm: 45 instructions (180 bytes of .text), 10 bytes of .data.
+Wrote fizzbuzz_reconstructed.mhc-bin (210 bytes)
+Wrote fizzbuzz_reconstructed.mhc-ascii
+
+$ cmp fizzbuzz.mhc-bin fizzbuzz_reconstructed.mhc-bin && echo "same bytes"
+same bytes
+
+$ java Disassembler not_mhc.mhc-bin
+Disassembly failed for not_mhc.mhc-bin: file is only 11 bytes; the MHC1 header needs 20
+No output file was written.
+
+$ java Disassembler truncated.mhc-bin
+Disassembly failed for truncated.mhc-bin: header says 210 bytes total, but the file has 100
+No output file was written.
+
+$ java Disassembler bad_instruction.mhc-bin
+Disassembly failed for bad_instruction.mhc-bin: word at 0x00400000 (0x02000020): unsupported R-type funct 32
+No output file was written.
+
+$ java Disassembler bad_char.mhc-ascii
+Disassembly failed for bad_char.mhc-ascii: mhc-ascii line 12 has an invalid character '2' (only 0, 1, spaces, and # comment lines are allowed)
+No output file was written.
+
+$ java Disassembler missing.mhc-bin
+Error: input file not found: missing.mhc-bin
+

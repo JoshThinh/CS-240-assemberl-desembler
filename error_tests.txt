@@ -1,0 +1,23 @@
+$ java Assembler bad_instruction.asm
+Assembly failed in bad_instruction.asm: Line 3 (mul $t0, $t1, $t2): Unsupported instruction: mul
+No output files were written.
+
+$ java Assembler bad_register.asm
+Assembly failed in bad_register.asm: Line 3 (addi $t9x, $zero, 1): Unknown register: $t9x
+No output files were written.
+
+$ java Assembler bad_label.asm
+Assembly failed in bad_label.asm: Line 3 (j Nowhere): Undefined label: Nowhere
+No output files were written.
+
+$ java Assembler bad_range.asm
+Assembly failed in bad_range.asm: Line 3 (addi $t0, $zero, 99999): Value out of range: 99999
+No output files were written.
+
+$ java Assembler bad_directive.asm
+Assembly failed in bad_directive.asm: Line 2 (msg: .word 5): Unsupported directive: .word
+No output files were written.
+
+$ java Assembler missing.asm
+Error: input file not found: missing.asm
+
